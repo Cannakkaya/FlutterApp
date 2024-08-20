@@ -15,6 +15,7 @@ import 'screens/manage_users_screen.dart'; // Kullanıcı yönetimi
 import 'screens/game_screen.dart'; // Mini oyun ekranı
 import 'screens/unknown_screen.dart'; // Bilinmeyen rotalar için ekran
 import 'screens/admin_randevu_manage_screen.dart'; // Admin randevu yönetim ekranı
+import 'services/directus_service.dart'; // DirectusService import edilmelidir
 
 void main() {
   runApp(MyApp());
@@ -27,6 +28,8 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (context) => AppointmentProvider()),
         ChangeNotifierProvider(create: (context) => UserRoleProvider()),
+        // DirectusService'i Provider olarak ekleyebilirsiniz, eğer gerekli ise.
+        Provider(create: (context) => DirectusService()),
       ],
       child: MaterialApp(
         title: 'Psikolog Randevu Sistemi',
@@ -48,11 +51,7 @@ class MyApp extends StatelessWidget {
           '/musteri': (context) => MusteriScreen(),
           '/oyun': (context) => GameScreen(),
           '/manageUsers': (context) => ManageUsersScreen(),
-          '/admin_randevu_manage': (context) =>
-              AdminRandevuManageScreen(), // Yeni rota
-        },
-        onGenerateRoute: (settings) {
-          return null; // Bilinmeyen rotalar için null döner
+          '/admin_randevu_manage': (context) => AdminRandevuManageScreen(),
         },
         onUnknownRoute: (settings) {
           return MaterialPageRoute(builder: (context) => UnknownScreen());
