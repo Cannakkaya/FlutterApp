@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:psikolog_app/services/directus_service.dart';
 import 'package:psikolog_app/services/directus_service.dart';
+import '/providers/user_role_provider.dart'; // Kullanıcı rolü sağlanması için
 
 class RegisterScreen extends StatefulWidget {
   @override
@@ -8,49 +10,75 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final DirectusService _directusService = DirectusService();
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-
-  void _register() async {
-    final name = _nameController.text;
-    final email = _emailController.text;
-    final password = _passwordController.text;
-
-    await _directusService.createUser(name, email, password);
-    Navigator.pushReplacementNamed(context, '/dashboard');
-  }
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
+    final directusService = Provider.of<DirectusService>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Register'),
       ),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _nameController,
-              decoration: InputDecoration(labelText: 'Name'),
-            ),
-            TextField(
-              controller: _emailController,
-              decoration: InputDecoration(labelText: 'Email'),
-            ),
-            TextField(
-              controller: _passwordController,
-              decoration: InputDecoration(labelText: 'Password'),
-              obscureText: true,
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _register,
-              child: Text('Register'),
-            ),
-          ],
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: <Widget>[
+              TextFormField(
+                controller: _nameController,
+                decoration: InputDecoration(labelText: 'Name'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your name';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: _emailController,
+                decoration: InputDecoration(labelText: 'Email'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your email';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: _passwordController,
+                decoration: InputDecoration(labelText: 'Password'),
+                obscureText: true,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your password';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () async {
+                  if (_formKey.currentState!.validate()) {
+                    // Kullanıcıyı oluştur
+                    await directusService.createUser(
+                      _nameController.text,
+                      _emailController.text,
+                      _passwordController.text,
+                    );
+
+                    // Başarıyla kayıt olduktan sonra login ekranına dön
+                    Navigator.pushReplacementNamed(context, '/login');
+                  }
+                },
+                child: Text('Register'),
+              ),
+            ],
+          ),
         ),
       ),
     );
