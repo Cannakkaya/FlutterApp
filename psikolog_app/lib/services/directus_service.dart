@@ -1,14 +1,15 @@
+// directus_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class DirectusService {
   final String baseUrl = 'http://localhost:8055'; // Directus API URL
-  final String collection = 'users'; // Koleksiyon adı
+  final String collection = 'appointments'; // Koleksiyon adı (randevular)
   final String apiToken = 'yOHGTq43vzP9NCbYtXAaYLbojG-iB5YI'; // API anahtarı
 
   // Kullanıcı kaydı
   Future<void> createUser(String name, String email, String password) async {
-    final url = Uri.parse('$baseUrl/items/$collection');
+    final url = Uri.parse('$baseUrl/items/users');
     final response = await http.post(
       url,
       headers: {
@@ -34,7 +35,7 @@ class DirectusService {
   // Kullanıcı güncelleme
   Future<void> updateUser(
       String id, String name, String email, String password) async {
-    final url = Uri.parse('$baseUrl/items/$collection/$id');
+    final url = Uri.parse('$baseUrl/items/users/$id');
     final response = await http.patch(
       url,
       headers: {
@@ -57,7 +58,7 @@ class DirectusService {
 
   // Kullanıcı rolünü güncelleme
   Future<void> updateUserRole(String id, String role) async {
-    final url = Uri.parse('$baseUrl/items/$collection/$id');
+    final url = Uri.parse('$baseUrl/items/users/$id');
     final response = await http.patch(
       url,
       headers: {
@@ -78,7 +79,7 @@ class DirectusService {
 
   // Kullanıcı başvurusu (Asistan olarak başvuru)
   Future<void> applyAsAssistant(String id, String psychologistId) async {
-    final url = Uri.parse('$baseUrl/items/$collection/$id');
+    final url = Uri.parse('$baseUrl/items/users/$id');
     final response = await http.patch(
       url,
       headers: {
@@ -101,7 +102,7 @@ class DirectusService {
   // Psikolog olarak başvuru
   Future<void> applyAsPsychologist(
       String id, Map<String, dynamic> details) async {
-    final url = Uri.parse('$baseUrl/items/$collection/$id');
+    final url = Uri.parse('$baseUrl/items/users/$id');
     final response = await http.patch(
       url,
       headers: {
@@ -123,7 +124,7 @@ class DirectusService {
 
   // Kullanıcı silme
   Future<void> deleteUser(String id) async {
-    final url = Uri.parse('$baseUrl/items/$collection/$id');
+    final url = Uri.parse('$baseUrl/items/users/$id');
     final response = await http.delete(
       url,
       headers: {
@@ -140,7 +141,7 @@ class DirectusService {
 
   // Kullanıcı alma
   Future<Map<String, dynamic>> getUser(String id) async {
-    final url = Uri.parse('$baseUrl/items/$collection/$id');
+    final url = Uri.parse('$baseUrl/items/users/$id');
     final response = await http.get(
       url,
       headers: {
@@ -159,7 +160,7 @@ class DirectusService {
   // Kullanıcı giriş doğrulaması
   Future<Map<String, dynamic>> loginUser(String email, String password) async {
     final url = Uri.parse(
-        '$baseUrl/items/$collection?filter[email][_eq]=$email&filter[password][_eq]=$password');
+        '$baseUrl/items/users?filter[email][_eq]=$email&filter[password][_eq]=$password');
     final response = await http.get(
       url,
       headers: {
@@ -177,6 +178,26 @@ class DirectusService {
       }
     } else {
       print('Failed to login user: ${response.body}');
+      return {};
+    }
+  }
+
+  // Psikolog için randevular alma
+  Future<Map<String, dynamic>> getAppointmentsForPsychologist(
+      String psychologistId) async {
+    final url = Uri.parse(
+        '$baseUrl/items/appointments?filter[psychologist_id][_eq]=$psychologistId');
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $apiToken',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      print('Failed to fetch appointments: ${response.body}');
       return {};
     }
   }

@@ -8,7 +8,7 @@ import 'screens/contact_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/admin_screen.dart';
-import 'screens/psikolog_screen.dart';
+import 'screens/psikolog_application_screen.dart';
 import 'screens/asistan_screen.dart';
 import 'screens/musteri_screen.dart';
 import 'screens/manage_users_screen.dart';
@@ -17,6 +17,7 @@ import 'screens/unknown_screen.dart';
 import 'screens/admin_randevu_manage_screen.dart';
 import 'screens/role_application_screen.dart'; // Role Application ekranı
 import 'screens/dashboard_screen.dart'; // Dashboard ekranı
+import 'screens/psikolog_dashboard_screen.dart'; // Psikolog Dashboard ekranı
 import 'services/directus_service.dart';
 
 void main() {
@@ -47,17 +48,21 @@ class MyApp extends StatelessWidget {
           '/contact': (context) => ContactScreen(),
           '/home': (context) => HomeScreen(),
           '/admin': (context) => AdminScreen(),
-          '/psikolog': (context) => PsikologScreen(),
+          '/psikolog': (context) => PsikologDashboardScreen(),
           '/asistan': (context) => AsistanScreen(),
           '/musteri': (context) => MusteriScreen(),
           '/oyun': (context) => GameScreen(),
           '/manageUsers': (context) => ManageUsersScreen(),
           '/admin_randevu_manage': (context) => AdminRandevuManageScreen(),
-          '/role-application': (context) => RoleApplicationScreen(
-              userId:
-                  ''), // User ID'nin doğru bir şekilde yönlendirilmesi gerekecek
-          '/dashboard': (context) =>
-              DashboardScreen(userId: ''), // User ID burada da yönlendirilecek
+          '/role-application': (context) {
+            final userId = ModalRoute.of(context)!.settings.arguments as String;
+            return RoleApplicationScreen(userId: userId);
+          },
+          '/dashboard': (context) {
+            final userId = ModalRoute.of(context)!.settings.arguments as String;
+            return DashboardScreen(userId: userId);
+          },
+          '/psychologist-dashboard': (context) => PsikologDashboardScreen(),
         },
         onUnknownRoute: (settings) {
           return MaterialPageRoute(builder: (context) => UnknownScreen());

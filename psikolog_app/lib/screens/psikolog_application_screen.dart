@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:psikolog_app/services/directus_service.dart';
 import 'package:provider/provider.dart';
+import 'package:psikolog_app/services/directus_service.dart';
+import 'package:psikolog_app/providers/user_role_provider.dart';
 
 class PsikologApplicationScreen extends StatefulWidget {
   @override
@@ -17,6 +18,9 @@ class _PsikologApplicationScreenState extends State<PsikologApplicationScreen> {
   @override
   Widget build(BuildContext context) {
     final directusService = Provider.of<DirectusService>(context);
+
+    // Kullanıcı ID'sini almak için Provider kullanımı
+    final userId = Provider.of<UserRoleProvider>(context).currentUserId;
 
     return Scaffold(
       appBar: AppBar(
@@ -78,8 +82,6 @@ class _PsikologApplicationScreenState extends State<PsikologApplicationScreen> {
               ElevatedButton(
                 onPressed: () async {
                   if (_formKey.currentState?.validate() ?? false) {
-                    final userId =
-                        'current_user_id'; // Mevcut kullanıcı ID'sini alın
                     final details = {
                       'name': _name,
                       'email': _email,
@@ -87,9 +89,9 @@ class _PsikologApplicationScreenState extends State<PsikologApplicationScreen> {
                     };
                     await directusService.applyAsPsychologist(userId, details);
 
-                    // Başvuru yapıldıktan sonra müşteri dashboard'una yönlendirin
+                    // Başvuru yapıldıktan sonra psikolog dashboard'una yönlendirin
                     Navigator.pushReplacementNamed(
-                        context, '/customer_dashboard');
+                        context, '/psychologist-dashboard');
                   }
                 },
                 child: Text('Başvuruyu Gönder'),

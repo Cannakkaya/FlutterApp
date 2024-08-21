@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:psikolog_app/services/directus_service.dart';
-import 'package:psikolog_app/services/directus_service.dart';
 
 class DashboardScreen extends StatefulWidget {
   final String userId;
@@ -46,8 +45,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   if (role == 'musteri')
                     ElevatedButton(
                       onPressed: () {
-                        Navigator.pushNamed(context, '/role-application',
-                            arguments: {'userId': widget.userId});
+                        Navigator.pushNamed(
+                          context,
+                          '/role-application',
+                          arguments: widget.userId,
+                        );
                       },
                       child: Text('Apply for a Role'),
                     ),
