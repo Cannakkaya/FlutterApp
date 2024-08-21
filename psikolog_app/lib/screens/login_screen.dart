@@ -1,25 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/user_role_provider.dart'; // UserRoleProvider import edilmelidir
-
-class User {
-  final String username;
-  final String password;
-  final String role;
-
-  User({required this.username, required this.password, required this.role});
-}
+import 'package:psikolog_app/services/directus_service.dart';
+import 'package:psikolog_app/services/directus_service.dart'; // DirectusService import edilmelidir
+import '../providers/user_role_provider.dart';
 
 class LoginScreen extends StatelessWidget {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-
-  final List<User> users = [
-    User(username: 'admin', password: 'admin123', role: 'admin'),
-    User(username: 'psikolog', password: 'psikolog123', role: 'psikolog'),
-    User(username: 'asistan', password: 'asistan123', role: 'asistan'),
-    User(username: 'musteri', password: 'musteri123', role: 'musteri'),
-  ];
+  final DirectusService _directusService =
+      DirectusService(); // DirectusService örneği
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +21,7 @@ class LoginScreen extends StatelessWidget {
           children: [
             TextField(
               controller: usernameController,
-              decoration: InputDecoration(labelText: 'Username'),
+              decoration: InputDecoration(labelText: 'E-Mail'),
             ),
             TextField(
               controller: passwordController,
@@ -41,54 +30,49 @@ class LoginScreen extends StatelessWidget {
             ),
             SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 String username = usernameController.text;
                 String password = passwordController.text;
 
-                // Kullanıcı doğrulaması
-                User? user = users.firstWhere(
-                  (user) =>
-                      user.username == username && user.password == password,
-                  orElse: () => User(
-                      username: '',
-                      password: '',
-                      role: 'none'), // Varsayılan bir User döndür
-                );
+                // Directus API ile kullanıcı doğrulaması
+                Map<String, dynamic> user =
+                    await _directusService.loginUser(username, password);
 
-                if (user.role != 'none') {
+                if (user.isNotEmpty) {
                   // Rol bazlı yönlendirme ve rol güncelleme
                   final userRoleProvider =
                       Provider.of<UserRoleProvider>(context, listen: false);
 
-                  // Rolü enum'a dönüştür
-                  UserRole role;
-                  switch (user.role) {
+                  // Rolü belirle
+                  String role = user['role'] ?? 'musteri';
+                  UserRole userRole;
+                  switch (role) {
                     case 'admin':
-                      role = UserRole.admin;
+                      userRole = UserRole.admin;
                       break;
                     case 'psikolog':
-                      role = UserRole.psychologist;
+                      userRole = UserRole.psychologist;
                       break;
                     case 'asistan':
-                      role = UserRole.assistant;
+                      userRole = UserRole.assistant;
                       break;
                     case 'musteri':
-                      role = UserRole.customer;
+                      userRole = UserRole.customer;
                       break;
                     default:
-                      role = UserRole.customer;
+                      userRole = UserRole.customer;
                       break;
                   }
-                  userRoleProvider.setRole(role);
+                  userRoleProvider.setRole(userRole);
 
                   // Yönlendirme
-                  if (user.role == 'admin') {
+                  if (userRole == UserRole.admin) {
                     Navigator.pushReplacementNamed(context, '/admin');
-                  } else if (user.role == 'psikolog') {
+                  } else if (userRole == UserRole.psychologist) {
                     Navigator.pushReplacementNamed(context, '/psikolog');
-                  } else if (user.role == 'asistan') {
+                  } else if (userRole == UserRole.assistant) {
                     Navigator.pushReplacementNamed(context, '/asistan');
-                  } else if (user.role == 'musteri') {
+                  } else if (userRole == UserRole.customer) {
                     Navigator.pushReplacementNamed(context, '/musteri');
                   }
                 } else {

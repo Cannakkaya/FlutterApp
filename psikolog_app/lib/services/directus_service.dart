@@ -4,12 +4,11 @@ import 'package:http/http.dart' as http;
 class DirectusService {
   final String baseUrl = 'http://localhost:8055'; // Directus API URL
   final String collection = 'users'; // Koleksiyon adı
-  final String apiToken =
-      'mio5ABagZum2o1pJBT3_HfePsqIF6hSWP_'; // API key burada
+  final String apiToken = 'yOHGTq43vzP9NCbYtXAaYLbojG-iB5YI'; // API anahtarı
 
-  // Kullanıcı oluşturma
   Future<void> createUser(String name, String email, String password) async {
-    final url = Uri.parse('$baseUrl/items/$collection'); // Directus API URL'si
+    print("Click");
+    final url = Uri.parse('$baseUrl/items/$collection');
     final response = await http.post(
       url,
       headers: {
@@ -17,12 +16,10 @@ class DirectusService {
         'Authorization': 'Bearer $apiToken',
       },
       body: jsonEncode({
-        'data': {
-          'first_name': name, // Kullanıcı adı
-          'email': email, // E-posta
-          'password': password, // Şifre
-          'status': 'active' // Durum
-        }
+        'name': name,
+        'email': email,
+        'password': password,
+        'created_at': DateTime.now().toIso8601String(),
       }),
     );
 
@@ -33,11 +30,9 @@ class DirectusService {
     }
   }
 
-  // Kullanıcı güncelleme
   Future<void> updateUser(
       String id, String name, String email, String password) async {
-    final url = Uri.parse(
-        '$baseUrl/items/$collection/$id'); // ID ile kullanıcı güncelleme
+    final url = Uri.parse('$baseUrl/items/$collection/$id');
     final response = await http.patch(
       url,
       headers: {
@@ -45,11 +40,9 @@ class DirectusService {
         'Authorization': 'Bearer $apiToken',
       },
       body: jsonEncode({
-        'data': {
-          'first_name': name, // Kullanıcı adı
-          'email': email, // E-posta
-          'password': password // Şifre
-        }
+        'name': name,
+        'email': email,
+        'password': password,
       }),
     );
 
@@ -60,10 +53,8 @@ class DirectusService {
     }
   }
 
-  // Kullanıcı silme
   Future<void> deleteUser(String id) async {
-    final url =
-        Uri.parse('$baseUrl/items/$collection/$id'); // ID ile kullanıcı silme
+    final url = Uri.parse('$baseUrl/items/$collection/$id');
     final response = await http.delete(
       url,
       headers: {
@@ -78,10 +69,8 @@ class DirectusService {
     }
   }
 
-  // Kullanıcı bilgilerini alma
   Future<Map<String, dynamic>> getUser(String id) async {
-    final url = Uri.parse(
-        '$baseUrl/items/$collection/$id'); // ID ile kullanıcı bilgisi alma
+    final url = Uri.parse('$baseUrl/items/$collection/$id');
     final response = await http.get(
       url,
       headers: {
@@ -90,9 +79,35 @@ class DirectusService {
     );
 
     if (response.statusCode == 200) {
-      return jsonDecode(response.body)['data']; // 'data' kısmını döndürüyoruz
+      print(response.body);
+      return jsonDecode(response.body);
     } else {
       print('Failed to fetch user: ${response.body}');
+      return {};
+    }
+  }
+
+  // Kullanıcı giriş doğrulaması
+  Future<Map<String, dynamic>> loginUser(String email, String password) async {
+    final url = Uri.parse(
+        '$baseUrl/items/$collection?filter[email][_eq]=$email&filter[password][_eq]=$password');
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $apiToken',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final result = jsonDecode(response.body);
+      if (result['data'].isNotEmpty) {
+        return result['data'][0];
+      } else {
+        print('No user found with provided credentials');
+        return {};
+      }
+    } else {
+      print('Failed to login user: ${response.body}');
       return {};
     }
   }

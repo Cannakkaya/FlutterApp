@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:psikolog_app/services/directus_service.dart';
-import 'package:psikolog_app/services/directus_service.dart'; // Servis dosyanızın yolu
+import '../services/directus_service.dart'; // DirectusService sınıfını import edin
 
 class RegisterScreen extends StatefulWidget {
   @override
@@ -8,74 +7,64 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final DirectusService directusService = DirectusService();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _nameController = TextEditingController();
+  bool _isLoading = false;
 
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-
-  bool isLoading = false;
-  String errorMessage = '';
-
-  void register() async {
+  Future<void> _register() async {
     setState(() {
-      isLoading = true;
-      errorMessage = '';
+      _isLoading = true;
     });
 
-    final name = nameController.text;
-    final email = emailController.text;
-    final password = passwordController.text;
-
     try {
-      await directusService.createUser(name, email, password);
-      // Kayıt başarılı, başarılı mesajı gösterebilir veya başka bir ekrana geçiş yapabilirsiniz
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('User registered successfully')),
+      await DirectusService().createUser(
+        _nameController.text,
+        _emailController.text,
+        _passwordController.text,
       );
+      // Kayıt işlemi başarılı, başarılı mesajı gösterilebilir veya başka bir işlemler yapılabilir.
+      Navigator.of(context).pushReplacementNamed('/login');
     } catch (error) {
-      setState(() {
-        errorMessage = 'Failed to register user: $error';
-      });
-    } finally {
-      setState(() {
-        isLoading = false;
-      });
+      // Hata işleme
+      print('Error: $error');
     }
+
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Register')),
+      appBar: AppBar(
+        title: Text('Register'),
+      ),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextField(
-              controller: nameController,
+              controller: _nameController,
               decoration: InputDecoration(labelText: 'Name'),
             ),
             TextField(
-              controller: emailController,
+              controller: _emailController,
               decoration: InputDecoration(labelText: 'Email'),
-              keyboardType: TextInputType.emailAddress,
             ),
             TextField(
-              controller: passwordController,
+              controller: _passwordController,
               decoration: InputDecoration(labelText: 'Password'),
               obscureText: true,
             ),
             SizedBox(height: 20),
-            if (isLoading) CircularProgressIndicator(),
-            if (errorMessage.isNotEmpty)
-              Text(errorMessage, style: TextStyle(color: Colors.red)),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: isLoading ? null : register,
-              child: Text('Register'),
-            ),
+            _isLoading
+                ? CircularProgressIndicator()
+                : ElevatedButton(
+                    onPressed: _register,
+                    child: Text('Register'),
+                  ),
           ],
         ),
       ),

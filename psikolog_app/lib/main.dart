@@ -1,61 +1,95 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'providers/appointment_provider.dart';
-import 'providers/user_role_provider.dart'; // UserRoleProvider import edilmelidir
-import 'screens/home_screen.dart';
-import 'screens/appointment_screen.dart';
-import 'screens/contact_screen.dart'; // İletişim sayfası
-import 'screens/login_screen.dart'; // Giriş sayfası
-import 'screens/register_screen.dart'; // Kayıt sayfası
-import 'screens/admin_screen.dart'; // Admin ekranı
-import 'screens/psikolog_screen.dart'; // Psikolog ekranı
-import 'screens/asistan_screen.dart'; // Asistan ekranı
-import 'screens/musteri_screen.dart'; // Müşteri ekranı
-import 'screens/manage_users_screen.dart'; // Kullanıcı yönetimi
-import 'screens/game_screen.dart'; // Mini oyun ekranı
-import 'screens/unknown_screen.dart'; // Bilinmeyen rotalar için ekran
-import 'screens/admin_randevu_manage_screen.dart'; // Admin randevu yönetim ekranı
-import 'services/directus_service.dart'; // DirectusService import edilmelidir
+import 'package:psikolog_app/services/directus_service.dart';
+import '../providers/user_role_provider.dart';
 
-void main() {
-  runApp(MyApp());
-}
+class LoginScreen extends StatelessWidget {
+  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final DirectusService _directusService = DirectusService();
 
-class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (context) => AppointmentProvider()),
-        ChangeNotifierProvider(create: (context) => UserRoleProvider()),
-        // DirectusService'i Provider olarak ekleyebilirsiniz, eğer gerekli ise.
-        Provider(create: (context) => DirectusService()),
-      ],
-      child: MaterialApp(
-        title: 'Psikolog Randevu Sistemi',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-          visualDensity: VisualDensity.adaptivePlatformDensity,
+    return Scaffold(
+      appBar: AppBar(title: Text('Login')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextField(
+              controller: usernameController,
+              decoration: InputDecoration(labelText: 'E-Mail'),
+            ),
+            TextField(
+              controller: passwordController,
+              decoration: InputDecoration(labelText: 'Password'),
+              obscureText: true,
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () async {
+                String username = usernameController.text;
+                String password = passwordController.text;
+
+                // Directus API ile kullanıcı doğrulaması
+                Map<String, dynamic>? user =
+                    await _directusService.loginUser(username, password);
+
+                if (user != null && user.isNotEmpty) {
+                  // Rol bazlı yönlendirme ve rol güncelleme
+                  final userRoleProvider =
+                      Provider.of<UserRoleProvider>(context, listen: false);
+
+                  // Rolü belirle ve null kontrolü yap
+                  String role = user['role'] ??
+                      'musteri'; // Eğer role null ise 'musteri' varsayılan olarak atanır.
+                  UserRole userRole;
+                  switch (role) {
+                    case 'admin':
+                      userRole = UserRole.admin;
+                      break;
+                    case 'psikolog':
+                      userRole = UserRole.psychologist;
+                      break;
+                    case 'asistan':
+                      userRole = UserRole.assistant;
+                      break;
+                    case 'musteri':
+                      userRole = UserRole.customer;
+                      break;
+                    default:
+                      userRole = UserRole.customer;
+                      break;
+                  }
+                  userRoleProvider.setRole(userRole);
+
+                  // Yönlendirme
+                  if (userRole == UserRole.admin) {
+                    Navigator.pushReplacementNamed(context, '/admin');
+                  } else if (userRole == UserRole.psychologist) {
+                    Navigator.pushReplacementNamed(context, '/psikolog');
+                  } else if (userRole == UserRole.assistant) {
+                    Navigator.pushReplacementNamed(context, '/asistan');
+                  } else if (userRole == UserRole.customer) {
+                    Navigator.pushReplacementNamed(context, '/musteri');
+                  }
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Invalid username or password')),
+                  );
+                }
+              },
+              child: Text('Login'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/register');
+              },
+              child: Text('Register'),
+            ),
+          ],
         ),
-        initialRoute: '/',
-        routes: {
-          '/': (context) => LoginScreen(),
-          '/login': (context) => LoginScreen(),
-          '/register': (context) => RegisterScreen(),
-          '/appointment': (context) => AppointmentScreen(),
-          '/contact': (context) => ContactScreen(),
-          '/home': (context) => HomeScreen(),
-          '/admin': (context) => AdminScreen(),
-          '/psikolog': (context) => PsikologScreen(),
-          '/asistan': (context) => AsistanScreen(),
-          '/musteri': (context) => MusteriScreen(),
-          '/oyun': (context) => GameScreen(),
-          '/manageUsers': (context) => ManageUsersScreen(),
-          '/admin_randevu_manage': (context) => AdminRandevuManageScreen(),
-        },
-        onUnknownRoute: (settings) {
-          return MaterialPageRoute(builder: (context) => UnknownScreen());
-        },
       ),
     );
   }
