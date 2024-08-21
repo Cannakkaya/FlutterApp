@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../services/directus_service.dart'; // DirectusService sınıfını import edin
+import 'package:psikolog_app/services/directus_service.dart';
+import 'package:psikolog_app/services/directus_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   @override
@@ -7,32 +8,18 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _nameController = TextEditingController();
-  bool _isLoading = false;
+  final DirectusService _directusService = DirectusService();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
-  Future<void> _register() async {
-    setState(() {
-      _isLoading = true;
-    });
+  void _register() async {
+    final name = _nameController.text;
+    final email = _emailController.text;
+    final password = _passwordController.text;
 
-    try {
-      await DirectusService().createUser(
-        _nameController.text,
-        _emailController.text,
-        _passwordController.text,
-      );
-      // Kayıt işlemi başarılı, başarılı mesajı gösterilebilir veya başka bir işlemler yapılabilir.
-      Navigator.of(context).pushReplacementNamed('/login');
-    } catch (error) {
-      // Hata işleme
-      print('Error: $error');
-    }
-
-    setState(() {
-      _isLoading = false;
-    });
+    await _directusService.createUser(name, email, password);
+    Navigator.pushReplacementNamed(context, '/dashboard');
   }
 
   @override
@@ -42,7 +29,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         title: Text('Register'),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(16.0),
         child: Column(
           children: [
             TextField(
@@ -59,12 +46,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
               obscureText: true,
             ),
             SizedBox(height: 20),
-            _isLoading
-                ? CircularProgressIndicator()
-                : ElevatedButton(
-                    onPressed: _register,
-                    child: Text('Register'),
-                  ),
+            ElevatedButton(
+              onPressed: _register,
+              child: Text('Register'),
+            ),
           ],
         ),
       ),

@@ -1,95 +1,67 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:psikolog_app/services/directus_service.dart';
-import '../providers/user_role_provider.dart';
+import 'providers/appointment_provider.dart';
+import 'providers/user_role_provider.dart';
+import 'screens/home_screen.dart';
+import 'screens/appointment_screen.dart';
+import 'screens/contact_screen.dart';
+import 'screens/login_screen.dart';
+import 'screens/register_screen.dart';
+import 'screens/admin_screen.dart';
+import 'screens/psikolog_screen.dart';
+import 'screens/asistan_screen.dart';
+import 'screens/musteri_screen.dart';
+import 'screens/manage_users_screen.dart';
+import 'screens/game_screen.dart';
+import 'screens/unknown_screen.dart';
+import 'screens/admin_randevu_manage_screen.dart';
+import 'screens/role_application_screen.dart'; // Role Application ekranı
+import 'screens/dashboard_screen.dart'; // Dashboard ekranı
+import 'services/directus_service.dart';
 
-class LoginScreen extends StatelessWidget {
-  final TextEditingController usernameController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-  final DirectusService _directusService = DirectusService();
+void main() {
+  runApp(MyApp());
+}
 
+class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Login')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextField(
-              controller: usernameController,
-              decoration: InputDecoration(labelText: 'E-Mail'),
-            ),
-            TextField(
-              controller: passwordController,
-              decoration: InputDecoration(labelText: 'Password'),
-              obscureText: true,
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                String username = usernameController.text;
-                String password = passwordController.text;
-
-                // Directus API ile kullanıcı doğrulaması
-                Map<String, dynamic>? user =
-                    await _directusService.loginUser(username, password);
-
-                if (user != null && user.isNotEmpty) {
-                  // Rol bazlı yönlendirme ve rol güncelleme
-                  final userRoleProvider =
-                      Provider.of<UserRoleProvider>(context, listen: false);
-
-                  // Rolü belirle ve null kontrolü yap
-                  String role = user['role'] ??
-                      'musteri'; // Eğer role null ise 'musteri' varsayılan olarak atanır.
-                  UserRole userRole;
-                  switch (role) {
-                    case 'admin':
-                      userRole = UserRole.admin;
-                      break;
-                    case 'psikolog':
-                      userRole = UserRole.psychologist;
-                      break;
-                    case 'asistan':
-                      userRole = UserRole.assistant;
-                      break;
-                    case 'musteri':
-                      userRole = UserRole.customer;
-                      break;
-                    default:
-                      userRole = UserRole.customer;
-                      break;
-                  }
-                  userRoleProvider.setRole(userRole);
-
-                  // Yönlendirme
-                  if (userRole == UserRole.admin) {
-                    Navigator.pushReplacementNamed(context, '/admin');
-                  } else if (userRole == UserRole.psychologist) {
-                    Navigator.pushReplacementNamed(context, '/psikolog');
-                  } else if (userRole == UserRole.assistant) {
-                    Navigator.pushReplacementNamed(context, '/asistan');
-                  } else if (userRole == UserRole.customer) {
-                    Navigator.pushReplacementNamed(context, '/musteri');
-                  }
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Invalid username or password')),
-                  );
-                }
-              },
-              child: Text('Login'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/register');
-              },
-              child: Text('Register'),
-            ),
-          ],
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => AppointmentProvider()),
+        ChangeNotifierProvider(create: (context) => UserRoleProvider()),
+        Provider(create: (context) => DirectusService()),
+      ],
+      child: MaterialApp(
+        title: 'Psikolog Randevu Sistemi',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+          visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
+        initialRoute: '/',
+        routes: {
+          '/': (context) => LoginScreen(),
+          '/login': (context) => LoginScreen(),
+          '/register': (context) => RegisterScreen(),
+          '/appointment': (context) => AppointmentScreen(),
+          '/contact': (context) => ContactScreen(),
+          '/home': (context) => HomeScreen(),
+          '/admin': (context) => AdminScreen(),
+          '/psikolog': (context) => PsikologScreen(),
+          '/asistan': (context) => AsistanScreen(),
+          '/musteri': (context) => MusteriScreen(),
+          '/oyun': (context) => GameScreen(),
+          '/manageUsers': (context) => ManageUsersScreen(),
+          '/admin_randevu_manage': (context) => AdminRandevuManageScreen(),
+          '/role-application': (context) => RoleApplicationScreen(
+              userId:
+                  ''), // User ID'nin doğru bir şekilde yönlendirilmesi gerekecek
+          '/dashboard': (context) =>
+              DashboardScreen(userId: ''), // User ID burada da yönlendirilecek
+        },
+        onUnknownRoute: (settings) {
+          return MaterialPageRoute(builder: (context) => UnknownScreen());
+        },
       ),
     );
   }

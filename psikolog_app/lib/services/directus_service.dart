@@ -6,8 +6,8 @@ class DirectusService {
   final String collection = 'users'; // Koleksiyon adı
   final String apiToken = 'yOHGTq43vzP9NCbYtXAaYLbojG-iB5YI'; // API anahtarı
 
+  // Kullanıcı kaydı
   Future<void> createUser(String name, String email, String password) async {
-    print("Click");
     final url = Uri.parse('$baseUrl/items/$collection');
     final response = await http.post(
       url,
@@ -20,6 +20,7 @@ class DirectusService {
         'email': email,
         'password': password,
         'created_at': DateTime.now().toIso8601String(),
+        'role': 'musteri', // Otomatik olarak müşteri rolü atanıyor
       }),
     );
 
@@ -30,6 +31,7 @@ class DirectusService {
     }
   }
 
+  // Kullanıcı güncelleme
   Future<void> updateUser(
       String id, String name, String email, String password) async {
     final url = Uri.parse('$baseUrl/items/$collection/$id');
@@ -53,6 +55,73 @@ class DirectusService {
     }
   }
 
+  // Kullanıcı rolünü güncelleme
+  Future<void> updateUserRole(String id, String role) async {
+    final url = Uri.parse('$baseUrl/items/$collection/$id');
+    final response = await http.patch(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $apiToken',
+      },
+      body: jsonEncode({
+        'role': role,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      print('User role updated successfully');
+    } else {
+      print('Failed to update role: ${response.body}');
+    }
+  }
+
+  // Kullanıcı başvurusu (Asistan olarak başvuru)
+  Future<void> applyAsAssistant(String id, String psychologistId) async {
+    final url = Uri.parse('$baseUrl/items/$collection/$id');
+    final response = await http.patch(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $apiToken',
+      },
+      body: jsonEncode({
+        'psychologist_id': psychologistId,
+        'role': 'asistan',
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      print('Applied as assistant successfully');
+    } else {
+      print('Failed to apply as assistant: ${response.body}');
+    }
+  }
+
+  // Psikolog olarak başvuru
+  Future<void> applyAsPsychologist(
+      String id, Map<String, dynamic> details) async {
+    final url = Uri.parse('$baseUrl/items/$collection/$id');
+    final response = await http.patch(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $apiToken',
+      },
+      body: jsonEncode({
+        'role': 'pending_psychologist', // Başvuru durumunu belirtiyoruz
+        'application_details': details, // Başvuru detayları
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      print('Applied as psychologist successfully');
+    } else {
+      print('Failed to apply as psychologist: ${response.body}');
+    }
+  }
+
+  // Kullanıcı silme
   Future<void> deleteUser(String id) async {
     final url = Uri.parse('$baseUrl/items/$collection/$id');
     final response = await http.delete(
@@ -69,6 +138,7 @@ class DirectusService {
     }
   }
 
+  // Kullanıcı alma
   Future<Map<String, dynamic>> getUser(String id) async {
     final url = Uri.parse('$baseUrl/items/$collection/$id');
     final response = await http.get(
@@ -79,7 +149,6 @@ class DirectusService {
     );
 
     if (response.statusCode == 200) {
-      print(response.body);
       return jsonDecode(response.body);
     } else {
       print('Failed to fetch user: ${response.body}');
