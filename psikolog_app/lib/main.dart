@@ -54,6 +54,7 @@ class MyApp extends StatelessWidget {
           '/oyun': (context) => GameScreen(),
           '/manageUsers': (context) => ManageUsersScreen(),
           '/admin_randevu_manage': (context) => AdminRandevuManageScreen(),
+          'Psikolog Başvurusu': (context) => PsikologApplicationScreen(),
           '/role-application': (context) {
             final userId = ModalRoute.of(context)!.settings.arguments as String;
             return RoleApplicationScreen(userId: userId);
