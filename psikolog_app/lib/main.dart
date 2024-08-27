@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:psikolog_app/models/psychologist.dart';
+import 'package:psikolog_app/screens/appointment_request_screen.dart';
+import 'package:psikolog_app/screens/psychologist_list_screen.dart';
 import 'providers/appointment_provider.dart';
 import 'providers/user_role_provider.dart';
 import 'screens/home_screen.dart';
@@ -54,7 +57,13 @@ class MyApp extends StatelessWidget {
           '/oyun': (context) => GameScreen(),
           '/manageUsers': (context) => ManageUsersScreen(),
           '/admin_randevu_manage': (context) => AdminRandevuManageScreen(),
-          'Psikolog Başvurusu': (context) => PsikologApplicationScreen(),
+          '/psychologists': (context) => PsychologistListScreen(),
+          '/appointmentRequest': (context) {
+            final psychologist =
+                ModalRoute.of(context)!.settings.arguments as Psychologist;
+            return AppointmentRequestScreen(psychologist: psychologist);
+          },
+          '/psikolog-application': (context) => PsikologApplicationScreen(),
           '/role-application': (context) {
             final userId = ModalRoute.of(context)!.settings.arguments as String;
             return RoleApplicationScreen(userId: userId);

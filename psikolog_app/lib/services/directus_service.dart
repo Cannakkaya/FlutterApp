@@ -1,14 +1,15 @@
-// directus_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
+import 'package:psikolog_app/models/psychologist.dart';
 
 class DirectusService {
   final String baseUrl = 'http://localhost:8055'; // Directus API URL
-  final String collection = 'appointments'; // Koleksiyon adı (randevular)
-  final String apiToken = 'yOHGTq43vzP9NCbYtXAaYLbojG-iB5YI'; // API anahtarı
+  final String apiToken = 'CMa4ZfX75UaJIEKMEevCej9rKRKPOjqO'; // API anahtarı
 
   // Kullanıcı kaydı
-  Future<void> createUser(String name, String email, String password) async {
+  Future<void> createUser(
+      String name, String email, String password, String role) async {
     final url = Uri.parse('$baseUrl/items/users');
     final response = await http.post(
       url,
@@ -21,7 +22,7 @@ class DirectusService {
         'email': email,
         'password': password,
         'created_at': DateTime.now().toIso8601String(),
-        'role': 'musteri', // Otomatik olarak müşteri rolü atanıyor
+        'role': role, // Kullanıcının seçtiği rol
       }),
     );
 
@@ -199,6 +200,47 @@ class DirectusService {
     } else {
       print('Failed to fetch appointments: ${response.body}');
       return {};
+    }
+  }
+
+  // Psikologları alma
+  Future<List<Psychologist>> getPsychologists() async {
+    final response = await http
+        .get(Uri.parse('$baseUrl/items/psychologists')); // API URL'ini güncelle
+    if (response.statusCode == 200) {
+      List data = json.decode(response.body)['data'];
+      return data
+          .map((psychologist) => Psychologist.fromJson(psychologist))
+          .toList();
+    } else {
+      throw Exception('Failed to load psychologists');
+    }
+  }
+
+  // Randevu talep etme
+  Future<void> requestAppointment({
+    required String psychologistId,
+    required DateTime date,
+    String? description,
+  }) async {
+    final url = Uri.parse('$baseUrl/items/appointments');
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $apiToken',
+      },
+      body: jsonEncode({
+        'psychologist_id': psychologistId,
+        'date': DateFormat('yyyy-MM-dd').format(date),
+        'description': description,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      print('Appointment requested successfully');
+    } else {
+      print('Failed to request appointment: ${response.body}');
     }
   }
 }

@@ -1,8 +1,8 @@
-// psikolog_dashboard_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:psikolog_app/services/directus_service.dart';
 import 'package:psikolog_app/providers/user_role_provider.dart';
+import 'package:psikolog_app/screens/appointment_detail_screen.dart';
 
 class PsikologDashboardScreen extends StatefulWidget {
   @override
@@ -35,15 +35,24 @@ class _PsikologDashboardScreenState extends State<PsikologDashboardScreen> {
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else if (snapshot.hasData) {
-            final appointments = snapshot.data!['data'] ??
-                []; // API yanıtındaki 'data' alanını kullanın
+            final appointments = snapshot.data!['data'] ?? [];
             return ListView.builder(
               itemCount: appointments.length,
               itemBuilder: (context, index) {
                 final appointment = appointments[index];
                 return ListTile(
-                  title: Text('Patient: ${appointment['patient_name']}'),
-                  subtitle: Text('Date: ${appointment['date']}'),
+                  title: Text('Hasta: ${appointment['patient_name']}'),
+                  subtitle: Text('Tarih: ${appointment['date']}'),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AppointmentDetailScreen(
+                          appointment: appointment,
+                        ),
+                      ),
+                    );
+                  },
                 );
               },
             );

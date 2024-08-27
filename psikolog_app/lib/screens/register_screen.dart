@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:psikolog_app/services/directus_service.dart';
-import 'package:psikolog_app/services/directus_service.dart';
 import '/providers/user_role_provider.dart'; // Kullanıcı rolü sağlanması için
 
 class RegisterScreen extends StatefulWidget {
@@ -14,6 +13,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  String _selectedRole = 'musteri'; // Varsayılan rol
 
   @override
   Widget build(BuildContext context) {
@@ -61,6 +61,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 },
               ),
               SizedBox(height: 20),
+              DropdownButtonFormField<String>(
+                value: _selectedRole,
+                onChanged: (String? newValue) {
+                  setState(() {
+                    _selectedRole = newValue!;
+                  });
+                },
+                items: <String>['musteri', 'asistan', 'psikolog']
+                    .map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+                decoration: InputDecoration(labelText: 'Role'),
+              ),
+              SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
@@ -69,6 +86,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       _nameController.text,
                       _emailController.text,
                       _passwordController.text,
+                      _selectedRole,
                     );
 
                     // Başarıyla kayıt olduktan sonra login ekranına dön

@@ -21,13 +21,13 @@ class MusteriScreen extends StatelessWidget {
               Icons.calendar_today,
               '/appointment',
             ),
-            // Mini oyun
-            _buildGridItem(
-              context,
-              'Mini Oyun',
-              Icons.games,
-              '/oyun',
-            ),
+            // // Mini oyun
+            // _buildGridItem(
+            //   context,
+            //   'Mini Oyun',
+            //   Icons.games,
+            //   '/oyun',
+            // ),
             // İletişim
             _buildGridItem(
               context,
@@ -35,20 +35,20 @@ class MusteriScreen extends StatelessWidget {
               Icons.contact_mail,
               '/contact',
             ),
-            // Psikolog rolü başvurusu
-            _buildGridItem(
-              context,
-              'Psikolog Başvurusu',
-              Icons.person_add,
-              '/psikolog', // Buraya başvuru ekranı URL'si ekleyebilirsiniz
-            ),
-            // Asistan rolü başvurusu
-            _buildGridItem(
-              context,
-              'Asistan Başvurusu',
-              Icons.person_add_alt,
-              '/asistan', // Buraya başvuru ekranı URL'si ekleyebilirsiniz
-            ),
+            // // Psikolog rolü başvurusu
+            // _buildGridItem(
+            //   context,
+            //   'Psikolog Başvurusu',
+            //   Icons.person_add,
+            //   '/psikolog', // Buraya başvuru ekranı URL'si ekleyebilirsiniz
+            // ),
+            // // Asistan rolü başvurusu
+            // _buildGridItem(
+            //   context,
+            //   'Asistan Başvurusu',
+            //   Icons.person_add_alt,
+            //   '/asistan', // Buraya başvuru ekranı URL'si ekleyebilirsiniz
+            // ),
           ],
         ),
       ),
